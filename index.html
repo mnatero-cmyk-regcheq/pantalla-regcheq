@@ -37,9 +37,9 @@ window.CONFIG = {
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;cursor:none}
 body{font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased}
-#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center;
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;-webkit-transform-origin:0 0;transform-origin:0 0;
   display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:24px;padding:36px 52px 32px}
-#stage::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+#stage::before{content:"";position:absolute;top:0;right:0;bottom:0;left:0;z-index:-1;pointer-events:none;
   background:radial-gradient(1100px 560px at 88% -12%,rgba(0,100,224,.28),transparent 62%)}
 
 /* Encabezado */
@@ -64,7 +64,7 @@ main.solo{grid-template-columns:minmax(0,1fr)}
 .card .hd svg{width:28px;height:28px;flex:0 0 auto}
 .card .hd .cnt{margin-left:auto;font-size:20px;letter-spacing:0;text-transform:none;font-weight:600;font-variant-numeric:tabular-nums}
 .card .vp{position:relative;flex:1;min-height:0}
-.item{position:absolute;inset:0;padding:12px 32px 30px;display:flex;align-items:center;opacity:0;transform:translateY(12px);transition:opacity .7s ease,transform .7s ease}
+.item{position:absolute;top:0;right:0;bottom:0;left:0;padding:12px 32px 30px;display:flex;align-items:center;opacity:0;transform:translateY(12px);transition:opacity .7s ease,transform .7s ease}
 .item.on{opacity:1;transform:none}
 #events{flex:1}
 #ads{flex:0 0 250px}
@@ -79,7 +79,7 @@ main.solo{grid-template-columns:minmax(0,1fr)}
 .evtx{flex:1;min-width:0;display:flex;flex-direction:column;gap:18px}
 .pills{display:flex;gap:12px}
 .cat{font-size:20px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:6px 18px;border-radius:999px;
-  color:var(--c);background:color-mix(in srgb,var(--c) 16%,transparent);border:2px solid color-mix(in srgb,var(--c) 40%,transparent)}
+  color:var(--c);background:rgba(255,255,255,.08);background:color-mix(in srgb,var(--c) 16%,transparent);border:2px solid rgba(255,255,255,.25);border:2px solid color-mix(in srgb,var(--c) 40%,transparent)}
 .now{font-size:20px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:6px 18px;border-radius:999px;background:var(--green);color:var(--bg)}
 .big{font-size:70px;font-weight:800;line-height:1.05;letter-spacing:-.025em;text-wrap:balance;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .big.m{font-size:60px}.big.s{font-size:50px}
@@ -89,7 +89,7 @@ main.solo{grid-template-columns:minmax(0,1fr)}
 
 /* Anuncio */
 .ad{display:flex;align-items:center;gap:36px;width:100%;min-width:0}
-.orb{flex:0 0 150px;height:150px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 16%,transparent);color:var(--c)}
+.orb{flex:0 0 150px;height:150px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.08);background:color-mix(in srgb,var(--c) 16%,transparent);color:var(--c)}
 .orb svg{width:76px;height:76px}
 .orb.img{flex-basis:260px;border-radius:20px;background:var(--panel-2) center/cover no-repeat}
 .ad .tx{min-width:0;display:flex;flex-direction:column;gap:10px}
@@ -102,7 +102,7 @@ main.solo{grid-template-columns:minmax(0,1fr)}
 .room .nm{font-size:56px;font-weight:800;letter-spacing:-.02em;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .room .cap{font-size:24px;color:var(--dim);font-weight:500}
 .state{align-self:flex-start;display:inline-flex;align-items:center;gap:14px;font-size:40px;font-weight:800;padding:10px 26px;border-radius:999px;
-  color:var(--c);background:color-mix(in srgb,var(--c) 15%,transparent)}
+  color:var(--c);background:rgba(255,255,255,.08);background:color-mix(in srgb,var(--c) 15%,transparent)}
 .state i{width:18px;height:18px;border-radius:50%;background:currentColor}
 .room .when{font-size:30px;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
 
@@ -190,8 +190,19 @@ var DIAS_C=["dom","lun","mar","mié","jue","vie","sáb"];
 var MESES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
 var MESES_L=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 
-function fit(){ var s=Math.min(innerWidth/1920, innerHeight/1080); $("stage").style.transform="translate(-50%,-50%) scale("+s+")"; }
-addEventListener("resize",fit); fit();
+// Ajusta el diseño (1920x1080) al tamaño real de la pantalla. Usa varias medidas porque
+// algunos reproductores informan mal el tamaño al cargar, y lo vuelve a revisar cada 2 segundos.
+function fit(){
+  var de=document.documentElement;
+  var w=window.innerWidth||de.clientWidth||screen.width, h=window.innerHeight||de.clientHeight||screen.height;
+  if (!w||!h) return;
+  var s=Math.min(w/1920, h/1080), x=Math.max(0,(w-1920*s)/2), y=Math.max(0,(h-1080*s)/2);
+  var t="translate("+x+"px,"+y+"px) scale("+s+")", st=$("stage");
+  st.style.webkitTransform=t; st.style.transform=t;
+  if (qs.get("debug")) setStatus(w+"x"+h+" · dpr "+(window.devicePixelRatio||1)+" · escala "+s.toFixed(3));
+}
+addEventListener("resize",fit); addEventListener("orientationchange",fit); addEventListener("load",fit);
+fit(); setInterval(fit,2000);
 
 /* ---------- Fechas en la zona horaria de la oficina ---------- */
 function parts(d){
