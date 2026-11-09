@@ -192,14 +192,30 @@ var MESES_L=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","
 
 // Ajusta el diseño (1920x1080) al tamaño real de la pantalla. Usa varias medidas porque
 // algunos reproductores informan mal el tamaño al cargar, y lo vuelve a revisar cada 2 segundos.
+// Algunos reproductores (WebView de Android en teles) dicen que la ventana mide 1920 pero muestran
+// solo la mitad; por eso se toma la medida MÁS CHICA entre ventana, área visible y pantalla.
+// Si aun así no calza, se puede forzar con ?escala=0.5 en la URL (o ESCALA en CONFIG).
 function fit(){
-  var de=document.documentElement;
-  var w=window.innerWidth||de.clientWidth||screen.width, h=window.innerHeight||de.clientHeight||screen.height;
-  if (!w||!h) return;
-  var s=Math.min(w/1920, h/1080), x=Math.max(0,(w-1920*s)/2), y=Math.max(0,(h-1080*s)/2);
+  var de=document.documentElement, vv=window.visualViewport;
+  var ws=[window.innerWidth, de.clientWidth, vv&&vv.width, screen.width, screen.availWidth];
+  var hs=[window.innerHeight, de.clientHeight, vv&&vv.height, screen.height, screen.availHeight];
+  var pos=function(a){ return a.filter(function(v){ return v>100; }); };
+  var w=Math.min.apply(null,pos(ws)), h=Math.min.apply(null,pos(hs));
+  if (!isFinite(w)||!isFinite(h)) return;
+  var forz=parseFloat(qs.get("escala")||C.ESCALA||"");
+  var s=forz>0 ? forz : Math.min(w/1920, h/1080);
+  var x=forz>0 ? 0 : Math.max(0,(w-1920*s)/2), y=forz>0 ? 0 : Math.max(0,(h-1080*s)/2);
   var t="translate("+x+"px,"+y+"px) scale("+s+")", st=$("stage");
   st.style.webkitTransform=t; st.style.transform=t;
-  if (qs.get("debug")) setStatus(w+"x"+h+" · dpr "+(window.devicePixelRatio||1)+" · escala "+s.toFixed(3));
+  if (qs.get("debug")) {
+    var d=$("dbg");
+    if (!d){ d=document.createElement("div"); d.id="dbg";
+      d.style.cssText="position:fixed;left:8px;top:8px;z-index:99;background:#ffcf2f;color:#000;font:bold 22px/1.35 Arial,sans-serif;padding:10px 14px;border-radius:8px;white-space:pre";
+      document.body.appendChild(d); }
+    var r=function(v){ return v ? Math.round(v) : "-"; };
+    d.textContent="ventana "+r(window.innerWidth)+"x"+r(window.innerHeight)+"\nvisible "+r(vv&&vv.width)+"x"+r(vv&&vv.height)+
+      "\npantalla "+r(screen.width)+"x"+r(screen.height)+"\ndpr "+(window.devicePixelRatio||1)+" · escala "+s.toFixed(3);
+  }
 }
 addEventListener("resize",fit); addEventListener("orientationchange",fit); addEventListener("load",fit);
 fit(); setInterval(fit,2000);
