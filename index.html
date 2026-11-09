@@ -192,13 +192,13 @@ var MESES_L=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","
 
 // Ajusta el diseño (1920x1080) al tamaño real de la pantalla. Usa varias medidas porque
 // algunos reproductores informan mal el tamaño al cargar, y lo vuelve a revisar cada 2 segundos.
-// Algunos reproductores (WebView de Android en teles) dicen que la ventana mide 1920 pero muestran
-// solo la mitad; por eso se toma la medida MÁS CHICA entre ventana, área visible y pantalla.
-// Si aun así no calza, se puede forzar con ?escala=0.5 en la URL (o ESCALA en CONFIG).
+// Ajusta el diseño al área visible de la ventana. No se usa el tamaño de "pantalla" (screen),
+// porque la tele de la oficina informa 960x540 aunque muestra 1920x1080.
+// Si en otra pantalla no calza, se puede forzar con ?escala=0.5 en la URL (o ESCALA en CONFIG).
 function fit(){
   var de=document.documentElement, vv=window.visualViewport;
-  var ws=[window.innerWidth, de.clientWidth, vv&&vv.width, screen.width, screen.availWidth];
-  var hs=[window.innerHeight, de.clientHeight, vv&&vv.height, screen.height, screen.availHeight];
+  var ws=[window.innerWidth, de.clientWidth, vv&&vv.width];
+  var hs=[window.innerHeight, de.clientHeight, vv&&vv.height];
   var pos=function(a){ return a.filter(function(v){ return v>100; }); };
   var w=Math.min.apply(null,pos(ws)), h=Math.min.apply(null,pos(hs));
   if (!isFinite(w)||!isFinite(h)) return;
