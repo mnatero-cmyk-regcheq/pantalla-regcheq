@@ -86,6 +86,11 @@ main.solo{grid-template-columns:minmax(0,1fr)}
 .facts{display:flex;flex-wrap:wrap;gap:12px 40px;font-size:32px;font-weight:600;color:var(--muted)}
 .facts span{display:inline-flex;align-items:center;gap:12px;min-width:0}
 .facts svg{width:34px;height:34px;flex:0 0 auto;color:var(--dim)}
+.nota{align-self:flex-start;display:flex;align-items:center;gap:14px;max-width:100%;font-size:30px;font-weight:700;line-height:1.2;color:var(--yellow);
+  background:rgba(255,207,47,.12);border:2px solid rgba(255,207,47,.35);padding:10px 22px;border-radius:16px}
+.nota svg{width:34px;height:34px;flex:0 0 auto}
+.nota span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.evtx.n{gap:12px}
 
 /* Anuncio */
 .ad{display:flex;align-items:center;gap:36px;width:100%;min-width:0}
@@ -239,6 +244,7 @@ function rel(d,t){ return d===t?"Hoy":d===addDays(t,1)?"Mañana":cap(DIAS[dow(d)
 
 /* ---------- Íconos ---------- */
 var I={
+  ticket:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v2M14 11v2M14 16v2"/></svg>',
   gente:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c2 .7 3.2 2.5 3.5 5.2"/></svg>',
   clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
@@ -416,11 +422,12 @@ function evHtml(e){
   var live = d===t && e.horaInicio && e.horaInicio<=nowHm && (!e.horaFin || e.horaFin>nowHm);
   var hr = e.horaInicio ? e.horaInicio+(e.horaFin?" – "+e.horaFin:"") : "Todo el día";
   var multi = e.fin && e.fin!==e.inicio ? "Hasta el "+DIAS[dow(e.fin)]+" "+dnum(e.fin) : "";
-  var L=(e.titulo||"").length, sz=L>52?"s":L>32?"m":"";
+  var L=(e.titulo||"").length+(e.nota?20:0), sz=L>52?"s":L>32?"m":"";   // con nota, el título va un poco más chico
   return '<div class="ev"><div class="datebox" style="--c:'+c+'"><div class="rel">'+rel(d,t)+'</div><div class="num">'+dnum(d)+'</div><div class="mo">'+MESES_L[mon(d)]+'</div></div>'+
-    '<div class="evtx"><div class="pills">'+(live?'<span class="now">Ahora</span>':'')+(e.categoria?'<span class="cat" style="--c:'+c+'">'+esc(e.categoria)+'</span>':'')+'</div>'+
+    '<div class="evtx'+(e.nota?' n':'')+'"><div class="pills">'+(live?'<span class="now">Ahora</span>':'')+(e.categoria?'<span class="cat" style="--c:'+c+'">'+esc(e.categoria)+'</span>':'')+'</div>'+
     '<div class="big '+sz+'">'+esc(e.titulo)+'</div>'+
-    '<div class="facts"><span>'+I.clock+esc(hr)+'</span>'+(e.detalle?'<span>'+I.pin+esc(e.detalle)+'</span>':'')+(multi?'<span>'+I.cal+esc(multi)+'</span>':'')+(e.personas?'<span>'+I.gente+esc(e.personas)+'</span>':'')+'</div></div></div>';
+    '<div class="facts"><span>'+I.clock+esc(hr)+'</span>'+(e.detalle?'<span>'+I.pin+esc(e.detalle)+'</span>':'')+(multi?'<span>'+I.cal+esc(multi)+'</span>':'')+(e.personas?'<span>'+I.gente+esc(e.personas)+'</span>':'')+'</div>'+
+    (e.nota?'<div class="nota">'+I.ticket+'<span>'+esc(e.nota)+'</span></div>':'')+'</div></div>';
 }
 function roomState(busy){
   if (!busy) return {c:"var(--dim)",txt:"Sin datos",when:""};
