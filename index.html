@@ -384,10 +384,12 @@ function render(){
 
   // Anuncios: saludo de cumpleaños del día + anuncios y bienvenidas
   var ads=[];
-  bds.filter(function(b){ return b.fecha===t; }).forEach(function(b){
+  // Fin de semana o feriado: sin saludos de cumpleaños ni aniversarios (nadie está en la oficina)
+  var habil = data.habil!==false && dow(t)!==0 && dow(t)!==6;
+  bds.filter(function(b){ return habil && b.fecha===t; }).forEach(function(b){
     ads.push({key:"bdh:"+b.nombre, html:function(){ return adHtml("var(--yellow)",I.cake,"¡Feliz cumpleaños, "+b.nombre+"!","Todo el equipo de Regcheq te desea un gran día."); }}); });
   // Aniversarios en Regcheq (vienen solo los de hoy)
-  (data.aniversarios||[]).forEach(function(a){
+  (habil ? data.aniversarios||[] : []).forEach(function(a){
     var n=a.anios===1?"1 año":a.anios+" años";
     ads.push({key:"aniv:"+a.nombre, html:function(){ return adHtml("var(--sky)",I.medal,"¡Feliz aniversario, "+a.nombre+"!","Hoy cumple "+n+" en Regcheq"+(a.area?" · "+a.area:"")+"."); }}); });
   (data.anuncios||[]).filter(function(a){ return !a.hasta || a.hasta>=t; }).forEach(function(a){
